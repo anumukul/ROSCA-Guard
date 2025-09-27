@@ -6,6 +6,7 @@ import { wagmiConfig, chains } from './config/wallet';
 import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
+import VerifyIdentity from './pages/VerifyIdentity'; // NEW
 import CreateCircle from './pages/CreateCircle';
 import BrowseCircles from './pages/BrowseCircles';
 import MyCircles from './pages/MyCircles';
@@ -24,6 +25,7 @@ function App() {
               <div className="w-full">
                 <Routes>
                   <Route path="/" element={<HomePage />} />
+                  <Route path="/verify" element={<VerifyIdentity />} /> {/* NEW */}
                   <Route path="/create" element={<CreateCircle />} />
                   <Route path="/browse" element={<BrowseCircles />} />
                   <Route path="/my-circles" element={<MyCircles />} />

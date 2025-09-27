@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SelfAppBuilder, SelfQRcodeWrapper, type SelfApp } from '@selfxyz/qrcode';
 import { getUniversalLink } from '@selfxyz/core';
-import { ethers } from 'ethers';
 import { toast } from 'react-hot-toast';
 
 interface SelfVerificationProps {
@@ -14,51 +13,69 @@ export default function SelfVerification({ onVerificationSuccess, onError }: Sel
   const [selfApp, setSelfApp] = useState<SelfApp | null>(null);
   const [universalLink, setUniversalLink] = useState<string>('');
   const [verificationStatus, setVerificationStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle');
-  const [userId] = useState(() => ethers.utils.hexlify(ethers.utils.randomBytes(16)));
+  
+  // Use a simple UUID without crypto dependencies
+  const [userId] = useState(() => {
+  // Generate proper UUID v4 format
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+});
+
+  // Safe environment variable access
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const SELF_CONFIG_ID = import.meta.env.VITE_SELF_CONFIG_ID || '0x766466f264a44af31cd388cd05801bcc5dfff4980ee97503579db8b3d0742a7e';
 
   useEffect(() => {
     if (!verificationType) return;
 
     try {
       console.log('🔧 Initializing Self Protocol SDK...');
-      console.log('Config ID:', process.env.REACT_APP_SELF_CONFIG_ID);
+      console.log('Config ID:', SELF_CONFIG_ID);
       console.log('Verification Type:', verificationType);
+      console.log('API URL:', API_URL);
+      console.log('User ID:', userId);
 
-      // Configure disclosures based on verification type
-      const disclosures = verificationType === 'aadhaar' 
-        ? {
-            // Aadhaar-specific disclosures
-            minimumAge: 18,
-            nationality: true,
-            excludedCountries: [], // India typically doesn't exclude countries for Aadhaar users
-            ofac: true,
-            // Add specific Aadhaar requirements if needed
-          }
-        : {
-            // Passport disclosures
-            minimumAge: 18,
-            nationality: true,
-            excludedCountries: ['IRN', 'PRK', 'RUS', 'SYR'], // Exclude sanctioned countries
-            ofac: true,
-            // Add specific passport requirements if needed
-          };
+      // Match your registered config EXACTLY
+      const disclosures = {
+        minimumAge: 18,
+        nationality: true,
+        ofac: true, // MUST be true - matches your config "OFAC Level 1: Enabled"
+        excludedCountries: [], // Empty - matches "All countries allowed"
+      };
 
       console.log('📋 Disclosures configuration:', disclosures);
 
-      // Create the REAL Self App using official SDK
+      // Create simpler user context data
+      const userContextData = {
+        platform: 'rosca-guard',
+        verificationType,
+        timestamp: Date.now()
+      };
+
+      // Convert to padded hex string
+      const jsonString = JSON.stringify(userContextData);
+      const hexString = Array.from(jsonString)
+        .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join('')
+        .padEnd(64, '0'); // Shorter padding for testing
+
+      console.log('📄 User context data:', userContextData);
+      console.log('🔢 Hex string:', hexString);
+
+      // Create Self App with simplified configuration
       const app = new SelfAppBuilder({
-        appName: "ROSCA-Guard Identity Verification",
-        scope: "rosca-guard-v1", // Must match backend scope exactly
-        endpoint: `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/self/verify-self`,
+        appName: "ROSCA-Guard",
+        scope: "rosca-guard-v1",
+        endpoint: `${API_URL}/api/self/verify-self`,
         userId: userId,
-        version: 2, // Use version 2 for latest features
-        userDefinedData: Buffer.from(JSON.stringify({
-          action: verificationType === 'aadhaar' ? 'aadhaar_verification' : 'passport_verification',
-          platform: 'rosca-guard',
-          timestamp: Date.now(),
-          verificationType,
-          configId: process.env.REACT_APP_SELF_CONFIG_ID
-        })).toString('hex').padEnd(128, '0'), // Ensure proper padding
+        version: 2,
+        userIdType: "uuid",
+        userDefinedData: hexString,
+        endpointType: "https", // Explicitly set endpoint type
+        devMode: false, // Set to true if testing with mock
         disclosures
       }).build();
 
@@ -70,11 +87,11 @@ export default function SelfVerification({ onVerificationSuccess, onError }: Sel
       setUniversalLink(link);
       console.log('🔗 Universal link generated:', link);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('💥 Error initializing Self app:', error);
       onError(`Failed to initialize verification: ${error.message}`);
     }
-  }, [verificationType, userId, onError]);
+  }, [verificationType, userId, onError, API_URL, SELF_CONFIG_ID]);
 
   const handleVerificationSuccess = async (verificationResult: any) => {
     console.log('🎉 Verification successful:', verificationResult);
@@ -86,7 +103,6 @@ export default function SelfVerification({ onVerificationSuccess, onError }: Sel
     
     toast.success(successMessage);
     
-    // Pass verification data to parent component with additional context
     onVerificationSuccess({
       verificationType,
       userId,
@@ -102,17 +118,13 @@ export default function SelfVerification({ onVerificationSuccess, onError }: Sel
     let errorMessage = 'Verification failed. ';
     
     if (error?.message) {
-      if (error.message.includes('timeout')) {
-        errorMessage += 'The verification timed out. Please try again.';
-      } else if (error.message.includes('network')) {
-        errorMessage += 'Network error. Please check your connection and try again.';
-      } else if (error.message.includes('cancelled')) {
-        errorMessage += 'Verification was cancelled.';
-      } else {
-        errorMessage += error.message;
-      }
+      errorMessage += error.message;
+    } else if (error?.reason) {
+      errorMessage += error.reason;
+    } else if (error?.error_code) {
+      errorMessage += `Error code: ${error.error_code}`;
     } else {
-      errorMessage += 'Please ensure you have the Self app installed and try again.';
+      errorMessage += 'Please check your configuration and try again.';
     }
     
     toast.error(errorMessage);
@@ -249,28 +261,10 @@ export default function SelfVerification({ onVerificationSuccess, onError }: Sel
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <h4 className="text-blue-400 font-medium">Download Self App First</h4>
+              <h4 className="text-blue-400 font-medium">Testing Mode</h4>
               <p className="text-blue-200 text-sm mt-1">
-                Make sure you have the Self app installed on your mobile device before proceeding.
+                For hackathon demo, you can test with mock documents. Download the Self app for full verification.
               </p>
-              <div className="flex space-x-4 mt-2">
-                <a 
-                  href="https://apps.apple.com/app/self-identity-verification/id6443934390" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-300 hover:text-blue-200 text-xs underline"
-                >
-                  📱 iOS App Store
-                </a>
-                <a 
-                  href="https://play.google.com/store/apps/details?id=com.proofofpassportapp" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-300 hover:text-blue-200 text-xs underline"
-                >
-                  🤖 Google Play Store
-                </a>
-              </div>
             </div>
           </div>
         </div>
@@ -301,18 +295,13 @@ export default function SelfVerification({ onVerificationSuccess, onError }: Sel
 
       {selfApp && (
         <div className="space-y-6">
-          {/* REAL Self Protocol QR Code Component */}
+          {/* Self Protocol QR Code Component */}
           <div className="bg-white p-6 rounded-xl">
             <SelfQRcodeWrapper
               selfApp={selfApp}
               onSuccess={handleVerificationSuccess}
               onError={handleVerificationError}
               size={280}
-              // Optional: Add styling props
-              style={{
-                width: '100%',
-                height: 'auto'
-              }}
             />
           </div>
 
@@ -353,6 +342,18 @@ export default function SelfVerification({ onVerificationSuccess, onError }: Sel
             </div>
           </div>
 
+          {/* Debug Information */}
+          <div className="text-center">
+            <details className="text-xs text-gray-500">
+              <summary className="cursor-pointer">Debug Info</summary>
+              <div className="mt-2 p-2 bg-gray-900 rounded text-left">
+                <div>API URL: {API_URL}</div>
+                <div>User ID: {userId}</div>
+                <div>Config ID: {SELF_CONFIG_ID}</div>
+              </div>
+            </details>
+          </div>
+
           {/* Mobile Deep Link */}
           {universalLink && (
             <div className="text-center">
@@ -370,16 +371,6 @@ export default function SelfVerification({ onVerificationSuccess, onError }: Sel
               <p className="text-xs text-gray-400 mt-1">
                 Click if scanning QR code doesn't work
               </p>
-            </div>
-          )}
-
-          {/* Debug Info (remove in production) */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="text-xs text-gray-500 p-2 bg-gray-900 rounded">
-              <div>Config ID: {process.env.REACT_APP_SELF_CONFIG_ID}</div>
-              <div>User ID: {userId}</div>
-              <div>Verification Type: {verificationType}</div>
-              <div>Endpoint: {process.env.REACT_APP_API_URL}/api/self/verify-self</div>
             </div>
           )}
         </div>

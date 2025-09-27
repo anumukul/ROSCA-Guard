@@ -26,15 +26,16 @@ export class SelfVerificationService {
     console.log(`Config ID: ${process.env.SELF_CONFIG_ID}`);
     
     // Initialize the REAL Self Backend Verifier
+    // FIXED: Match the registered config ID exactly
     this.verifier = new SelfBackendVerifier(
       'rosca-guard-v1', // Scope - must match frontend
       `${process.env.API_URL || 'http://localhost:3001'}/api/self/verify-self`, // Endpoint
       !this.isProduction, // mockPassport: true for development, false for production
       AllIds, // Accept all document types (passport, aadhaar, etc.)
       new DefaultConfigStore({
-        minimumAge: 18,
-        excludedCountries: this.isProduction ? ['IRN', 'PRK', 'RUS', 'SYR'] : [], // Stricter for production
-        ofac: true, // Always check OFAC sanctions
+        minimumAge: 18, // Matches registered config
+        excludedCountries: [], // FIXED: Empty array matches "All countries allowed" in your config
+        ofac: true, // FIXED: Matches "OFAC Level 1: Enabled" in your config
       }),
       'uuid' // User ID type
     );
@@ -202,7 +203,7 @@ export class SelfVerificationService {
       minimumAge: 18,
       ofacEnabled: true,
       supportedDocuments: ['passport', 'aadhaar'],
-      excludedCountries: this.isProduction ? ['IRN', 'PRK', 'RUS', 'SYR'] : []
+      excludedCountries: [] // FIXED: Empty to match registered config
     };
   }
 

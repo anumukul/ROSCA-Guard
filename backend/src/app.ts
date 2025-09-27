@@ -1,17 +1,26 @@
+// Move dotenv config to THE VERY TOP
+import { config } from 'dotenv';
+config(); // ← This MUST be before any other imports that use process.env
+
+// Now import everything else
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { config } from 'dotenv';
 
-// Import routes
+// Import routes (these will now have access to env vars)
 import bridgeRoutes from './api/bridgeRoutes';
-import selfRoutes from './api/selfRoutes'; // NEW
-
-config();
+import selfRoutes from './api/selfRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Add this debug to verify env vars are loaded
+console.log('🔍 Environment Variables Check:');
+console.log('CELO_RPC_URL:', process.env.CELO_RPC_URL ? 'SET ✅' : 'MISSING ❌');
+console.log('ETHEREUM_RPC_URL:', process.env.ETHEREUM_RPC_URL ? 'SET ✅' : 'MISSING ❌');
+console.log('KYC_VERIFIER_ADDRESS:', process.env.KYC_VERIFIER_ADDRESS ? 'SET ✅' : 'MISSING ❌');
+console.log('ROSCA_FACTORY_ADDRESS:', process.env.ROSCA_FACTORY_ADDRESS ? 'SET ✅' : 'MISSING ❌');
 
 // Security middleware
 app.use(helmet());
@@ -43,7 +52,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/bridge', bridgeRoutes);
-app.use('/api/self', selfRoutes); // NEW SELF ROUTES
+app.use('/api/self', selfRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

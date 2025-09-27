@@ -1,0 +1,27 @@
+{
+  "name": "rosca-contracts",
+  "version": "1.0.0",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:kyc": "hardhat run scripts/1-deploy-kyc-celo.ts --network celoTestnet",
+    "configure:kyc": "hardhat run scripts/2-configure-kyc.ts --network celoTestnet",
+    "deploy:rosca": "hardhat run scripts/3-deploy-rosca-ethereum.ts --network sepolia",
+    "create:test-circle": "hardhat run scripts/4-create-test-circle.ts --network sepolia",
+    "verify:integration": "hardhat run scripts/5-verify-integration.ts",
+    "deploy:mainnet": "hardhat run scripts/3-deploy-rosca-ethereum.ts --network mainnet",
+    "deploy:celo-mainnet": "hardhat run scripts/1-deploy-kyc-celo.ts --network celo"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "hardhat": "^2.19.4",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.0",
+    "@selfxyz/contracts": "latest",
+    "ethers": "^5.7.2"
+  }
+}

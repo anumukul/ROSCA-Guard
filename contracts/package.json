@@ -6,10 +6,12 @@
     "test": "hardhat test",
     "deploy:kyc": "hardhat run scripts/1-deploy-kyc-celo.ts --network celoTestnet",
     "configure:kyc": "hardhat run scripts/2-configure-kyc.ts --network celoTestnet",
-    "deploy:rosca": "hardhat run scripts/3-deploy-rosca-ethereum.ts --network sepolia",
+    "deploy:rosca": "hardhat run scripts/3-deploy-optimized-rosca.ts --network sepolia",
+    "test:integration": "hardhat run scripts/test-optimized-integration.ts --network sepolia",
     "create:test-circle": "hardhat run scripts/4-create-test-circle.ts --network sepolia",
-    "verify:integration": "hardhat run scripts/5-verify-integration.ts",
-    "deploy:mainnet": "hardhat run scripts/3-deploy-rosca-ethereum.ts --network mainnet",
+    "verify:integration": "hardhat run scripts/5-verify-integration.ts --network sepolia",
+    "demo:complete": "hardhat run scripts/demo-complete-flow.ts --network sepolia",
+    "deploy:mainnet": "hardhat run scripts/3-deploy-optimized-rosca.ts --network mainnet",
     "deploy:celo-mainnet": "hardhat run scripts/1-deploy-kyc-celo.ts --network celo"
   },
   "devDependencies": {

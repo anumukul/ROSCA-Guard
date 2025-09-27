@@ -57,6 +57,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockERC20__factory>;
     getContractFactory(
+      name: "IROSCAFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IROSCAFactory__factory>;
+    getContractFactory(
+      name: "ROSCAAnalytics",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ROSCAAnalytics__factory>;
+    getContractFactory(
       name: "IKYCVerifier",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IKYCVerifier__factory>;
@@ -144,6 +152,16 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.MockERC20>;
+    getContractAt(
+      name: "IROSCAFactory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IROSCAFactory>;
+    getContractAt(
+      name: "ROSCAAnalytics",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ROSCAAnalytics>;
     getContractAt(
       name: "IKYCVerifier",
       address: string,

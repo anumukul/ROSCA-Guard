@@ -2,6 +2,8 @@
 /node_modules
 .claude/
 .env 
+scripts/
+
 
 # Compilation output
 /dist

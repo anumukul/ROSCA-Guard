@@ -30,6 +30,10 @@ export type { ISelfVerificationRoot } from "./@selfxyz/contracts/contracts/inter
 export { ISelfVerificationRoot__factory } from "./factories/@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot__factory";
 export type { MockERC20 } from "./contracts/MockERC20";
 export { MockERC20__factory } from "./factories/contracts/MockERC20__factory";
+export type { IROSCAFactory } from "./contracts/ROSCAAnalytics.sol/IROSCAFactory";
+export { IROSCAFactory__factory } from "./factories/contracts/ROSCAAnalytics.sol/IROSCAFactory__factory";
+export type { ROSCAAnalytics } from "./contracts/ROSCAAnalytics.sol/ROSCAAnalytics";
+export { ROSCAAnalytics__factory } from "./factories/contracts/ROSCAAnalytics.sol/ROSCAAnalytics__factory";
 export type { IKYCVerifier } from "./contracts/ROSCACircle.sol/IKYCVerifier";
 export { IKYCVerifier__factory } from "./factories/contracts/ROSCACircle.sol/IKYCVerifier__factory";
 export type { ROSCACircle } from "./contracts/ROSCACircle.sol/ROSCACircle";

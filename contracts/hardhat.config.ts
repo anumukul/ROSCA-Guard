@@ -22,15 +22,39 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
+            runs: 1,
           },
+          viaIR: true,
         },
       },
     ],
+    overrides: {
+      "contracts/ROSCAFactory.sol": {
+        version: "0.8.28",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1,
+          },
+          viaIR: true,
+        },
+      },
+      "contracts/OptimizedROSCAFactory.sol": {
+        version: "0.8.28",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1,
+          },
+          viaIR: true,
+        },
+      },
+    },
   },
   networks: {
     hardhat: {
       chainId: 1337,
+      allowUnlimitedContractSize: true,
     },
     mainnet: {
       url: process.env.ETHEREUM_RPC_URL || "",

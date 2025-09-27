@@ -66,7 +66,6 @@ export declare namespace ROSCAFactory {
     memberCount: PromiseOrValue<BigNumberish>;
     isActive: PromiseOrValue<boolean>;
     isCompleted: PromiseOrValue<boolean>;
-    totalVolume: PromiseOrValue<BigNumberish>;
     currentRound: PromiseOrValue<BigNumberish>;
   };
 
@@ -78,7 +77,6 @@ export declare namespace ROSCAFactory {
     BigNumber,
     boolean,
     boolean,
-    BigNumber,
     BigNumber
   ] & {
     circleAddress: string;
@@ -88,39 +86,7 @@ export declare namespace ROSCAFactory {
     memberCount: BigNumber;
     isActive: boolean;
     isCompleted: boolean;
-    totalVolume: BigNumber;
     currentRound: BigNumber;
-  };
-
-  export type PlatformStatsStruct = {
-    totalCircles: PromiseOrValue<BigNumberish>;
-    activeCircles: PromiseOrValue<BigNumberish>;
-    completedCircles: PromiseOrValue<BigNumberish>;
-    totalMembers: PromiseOrValue<BigNumberish>;
-    totalValueLocked: PromiseOrValue<BigNumberish>;
-    totalRevenue: PromiseOrValue<BigNumberish>;
-    avgSuccessRate: PromiseOrValue<BigNumberish>;
-    totalCountries: PromiseOrValue<BigNumberish>;
-  };
-
-  export type PlatformStatsStructOutput = [
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber
-  ] & {
-    totalCircles: BigNumber;
-    activeCircles: BigNumber;
-    completedCircles: BigNumber;
-    totalMembers: BigNumber;
-    totalValueLocked: BigNumber;
-    totalRevenue: BigNumber;
-    avgSuccessRate: BigNumber;
-    totalCountries: BigNumber;
   };
 }
 
@@ -132,16 +98,9 @@ export interface ROSCAFactoryInterface extends utils.Interface {
     "circlesByCountry(string,uint256)": FunctionFragment;
     "collectPlatformFee(uint256,uint256)": FunctionFragment;
     "createCircle(uint256,uint256,uint256,string,uint256,uint256)": FunctionFragment;
-    "distributeYield(uint256,uint256)": FunctionFragment;
-    "emergencyWithdraw(address,uint256)": FunctionFragment;
-    "getActiveCircles()": FunctionFragment;
-    "getAllCircles()": FunctionFragment;
-    "getAvailableCircles(string)": FunctionFragment;
     "getCircleInfo(uint256)": FunctionFragment;
-    "getPlatformStats()": FunctionFragment;
-    "getUserActiveCircles(address)": FunctionFragment;
+    "getCirclesByCountry(string)": FunctionFragment;
     "getUserCircles(address)": FunctionFragment;
-    "getUserReputation(address)": FunctionFragment;
     "joinCircle(uint256)": FunctionFragment;
     "kycVerifier()": FunctionFragment;
     "owner()": FunctionFragment;
@@ -156,13 +115,10 @@ export interface ROSCAFactoryInterface extends utils.Interface {
     "supportedCountries(string)": FunctionFragment;
     "totalCircles()": FunctionFragment;
     "totalPlatformRevenue()": FunctionFragment;
-    "totalValueLocked()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "treasury()": FunctionFragment;
     "unpauseProtocol()": FunctionFragment;
-    "updateUserReputation(address,uint256)": FunctionFragment;
     "userCircles(address,uint256)": FunctionFragment;
-    "userReputationScores(address)": FunctionFragment;
     "yieldManager()": FunctionFragment;
   };
 
@@ -174,16 +130,9 @@ export interface ROSCAFactoryInterface extends utils.Interface {
       | "circlesByCountry"
       | "collectPlatformFee"
       | "createCircle"
-      | "distributeYield"
-      | "emergencyWithdraw"
-      | "getActiveCircles"
-      | "getAllCircles"
-      | "getAvailableCircles"
       | "getCircleInfo"
-      | "getPlatformStats"
-      | "getUserActiveCircles"
+      | "getCirclesByCountry"
       | "getUserCircles"
-      | "getUserReputation"
       | "joinCircle"
       | "kycVerifier"
       | "owner"
@@ -198,13 +147,10 @@ export interface ROSCAFactoryInterface extends utils.Interface {
       | "supportedCountries"
       | "totalCircles"
       | "totalPlatformRevenue"
-      | "totalValueLocked"
       | "transferOwnership"
       | "treasury"
       | "unpauseProtocol"
-      | "updateUserReputation"
       | "userCircles"
-      | "userReputationScores"
       | "yieldManager"
   ): FunctionFragment;
 
@@ -237,43 +183,15 @@ export interface ROSCAFactoryInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "distributeYield",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "emergencyWithdraw",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getActiveCircles",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getAllCircles",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getAvailableCircles",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getCircleInfo",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getPlatformStats",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getUserActiveCircles",
+    functionFragment: "getCirclesByCountry",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "getUserCircles",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getUserReputation",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -330,10 +248,6 @@ export interface ROSCAFactoryInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "totalValueLocked",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
   ): string;
@@ -343,16 +257,8 @@ export interface ROSCAFactoryInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "updateUserReputation",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "userCircles",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "userReputationScores",
-    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "yieldManager",
@@ -378,43 +284,15 @@ export interface ROSCAFactoryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "distributeYield",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "emergencyWithdraw",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getActiveCircles",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getAllCircles",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getAvailableCircles",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getCircleInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getPlatformStats",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getUserActiveCircles",
+    functionFragment: "getCirclesByCountry",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "getUserCircles",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getUserReputation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "joinCircle", data: BytesLike): Result;
@@ -468,10 +346,6 @@ export interface ROSCAFactoryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "totalValueLocked",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
@@ -481,15 +355,7 @@ export interface ROSCAFactoryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateUserReputation",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "userCircles",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "userReputationScores",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -498,36 +364,19 @@ export interface ROSCAFactoryInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "CircleCompleted(uint256,uint256)": EventFragment;
     "CircleCreated(uint256,address,address,uint256,string,uint256)": EventFragment;
     "CircleJoined(uint256,address)": EventFragment;
     "CountryAdded(string)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "PlatformFeeCollected(uint256,uint256)": EventFragment;
-    "ReputationUpdated(address,uint256)": EventFragment;
-    "YieldDistributed(address,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "CircleCompleted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CircleCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CircleJoined"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CountryAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PlatformFeeCollected"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ReputationUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "YieldDistributed"): EventFragment;
 }
-
-export interface CircleCompletedEventObject {
-  circleId: BigNumber;
-  totalVolume: BigNumber;
-}
-export type CircleCompletedEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  CircleCompletedEventObject
->;
-
-export type CircleCompletedEventFilter = TypedEventFilter<CircleCompletedEvent>;
 
 export interface CircleCreatedEventObject {
   circleId: BigNumber;
@@ -585,30 +434,6 @@ export type PlatformFeeCollectedEvent = TypedEvent<
 
 export type PlatformFeeCollectedEventFilter =
   TypedEventFilter<PlatformFeeCollectedEvent>;
-
-export interface ReputationUpdatedEventObject {
-  user: string;
-  newScore: BigNumber;
-}
-export type ReputationUpdatedEvent = TypedEvent<
-  [string, BigNumber],
-  ReputationUpdatedEventObject
->;
-
-export type ReputationUpdatedEventFilter =
-  TypedEventFilter<ReputationUpdatedEvent>;
-
-export interface YieldDistributedEventObject {
-  circle: string;
-  amount: BigNumber;
-}
-export type YieldDistributedEvent = TypedEvent<
-  [string, BigNumber],
-  YieldDistributedEventObject
->;
-
-export type YieldDistributedEventFilter =
-  TypedEventFilter<YieldDistributedEvent>;
 
 export interface ROSCAFactory extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -671,38 +496,13 @@ export interface ROSCAFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    distributeYield(
-      circleId: PromiseOrValue<BigNumberish>,
-      yieldAmount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    emergencyWithdraw(
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    getActiveCircles(overrides?: CallOverrides): Promise<[BigNumber[]]>;
-
-    getAllCircles(overrides?: CallOverrides): Promise<[BigNumber[]]>;
-
-    getAvailableCircles(
-      country: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>;
-
     getCircleInfo(
       circleId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[ROSCAFactory.CircleInfoStructOutput]>;
 
-    getPlatformStats(
-      overrides?: CallOverrides
-    ): Promise<[ROSCAFactory.PlatformStatsStructOutput]>;
-
-    getUserActiveCircles(
-      user: PromiseOrValue<string>,
+    getCirclesByCountry(
+      country: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
@@ -710,11 +510,6 @@ export interface ROSCAFactory extends BaseContract {
       user: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
-
-    getUserReputation(
-      user: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
 
     joinCircle(
       circleId: PromiseOrValue<BigNumberish>,
@@ -766,8 +561,6 @@ export interface ROSCAFactory extends BaseContract {
 
     totalPlatformRevenue(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    totalValueLocked(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -779,20 +572,9 @@ export interface ROSCAFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    updateUserReputation(
-      user: PromiseOrValue<string>,
-      newScore: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     userCircles(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    userReputationScores(
-      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
@@ -833,38 +615,13 @@ export interface ROSCAFactory extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  distributeYield(
-    circleId: PromiseOrValue<BigNumberish>,
-    yieldAmount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  emergencyWithdraw(
-    token: PromiseOrValue<string>,
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  getActiveCircles(overrides?: CallOverrides): Promise<BigNumber[]>;
-
-  getAllCircles(overrides?: CallOverrides): Promise<BigNumber[]>;
-
-  getAvailableCircles(
-    country: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber[]>;
-
   getCircleInfo(
     circleId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<ROSCAFactory.CircleInfoStructOutput>;
 
-  getPlatformStats(
-    overrides?: CallOverrides
-  ): Promise<ROSCAFactory.PlatformStatsStructOutput>;
-
-  getUserActiveCircles(
-    user: PromiseOrValue<string>,
+  getCirclesByCountry(
+    country: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
@@ -872,11 +629,6 @@ export interface ROSCAFactory extends BaseContract {
     user: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
-
-  getUserReputation(
-    user: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
 
   joinCircle(
     circleId: PromiseOrValue<BigNumberish>,
@@ -928,8 +680,6 @@ export interface ROSCAFactory extends BaseContract {
 
   totalPlatformRevenue(overrides?: CallOverrides): Promise<BigNumber>;
 
-  totalValueLocked(overrides?: CallOverrides): Promise<BigNumber>;
-
   transferOwnership(
     newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -941,20 +691,9 @@ export interface ROSCAFactory extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  updateUserReputation(
-    user: PromiseOrValue<string>,
-    newScore: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   userCircles(
     arg0: PromiseOrValue<string>,
     arg1: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  userReputationScores(
-    arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
@@ -995,38 +734,13 @@ export interface ROSCAFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    distributeYield(
-      circleId: PromiseOrValue<BigNumberish>,
-      yieldAmount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    emergencyWithdraw(
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    getActiveCircles(overrides?: CallOverrides): Promise<BigNumber[]>;
-
-    getAllCircles(overrides?: CallOverrides): Promise<BigNumber[]>;
-
-    getAvailableCircles(
-      country: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
-
     getCircleInfo(
       circleId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<ROSCAFactory.CircleInfoStructOutput>;
 
-    getPlatformStats(
-      overrides?: CallOverrides
-    ): Promise<ROSCAFactory.PlatformStatsStructOutput>;
-
-    getUserActiveCircles(
-      user: PromiseOrValue<string>,
+    getCirclesByCountry(
+      country: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
@@ -1034,11 +748,6 @@ export interface ROSCAFactory extends BaseContract {
       user: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
-
-    getUserReputation(
-      user: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     joinCircle(
       circleId: PromiseOrValue<BigNumberish>,
@@ -1086,8 +795,6 @@ export interface ROSCAFactory extends BaseContract {
 
     totalPlatformRevenue(overrides?: CallOverrides): Promise<BigNumber>;
 
-    totalValueLocked(overrides?: CallOverrides): Promise<BigNumber>;
-
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1097,20 +804,9 @@ export interface ROSCAFactory extends BaseContract {
 
     unpauseProtocol(overrides?: CallOverrides): Promise<void>;
 
-    updateUserReputation(
-      user: PromiseOrValue<string>,
-      newScore: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     userCircles(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    userReputationScores(
-      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1118,15 +814,6 @@ export interface ROSCAFactory extends BaseContract {
   };
 
   filters: {
-    "CircleCompleted(uint256,uint256)"(
-      circleId?: PromiseOrValue<BigNumberish> | null,
-      totalVolume?: null
-    ): CircleCompletedEventFilter;
-    CircleCompleted(
-      circleId?: PromiseOrValue<BigNumberish> | null,
-      totalVolume?: null
-    ): CircleCompletedEventFilter;
-
     "CircleCreated(uint256,address,address,uint256,string,uint256)"(
       circleId?: PromiseOrValue<BigNumberish> | null,
       creator?: PromiseOrValue<string> | null,
@@ -1173,24 +860,6 @@ export interface ROSCAFactory extends BaseContract {
       amount?: null,
       circleId?: null
     ): PlatformFeeCollectedEventFilter;
-
-    "ReputationUpdated(address,uint256)"(
-      user?: PromiseOrValue<string> | null,
-      newScore?: null
-    ): ReputationUpdatedEventFilter;
-    ReputationUpdated(
-      user?: PromiseOrValue<string> | null,
-      newScore?: null
-    ): ReputationUpdatedEventFilter;
-
-    "YieldDistributed(address,uint256)"(
-      circle?: PromiseOrValue<string> | null,
-      amount?: null
-    ): YieldDistributedEventFilter;
-    YieldDistributed(
-      circle?: PromiseOrValue<string> | null,
-      amount?: null
-    ): YieldDistributedEventFilter;
   };
 
   estimateGas: {
@@ -1228,45 +897,17 @@ export interface ROSCAFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    distributeYield(
-      circleId: PromiseOrValue<BigNumberish>,
-      yieldAmount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    emergencyWithdraw(
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    getActiveCircles(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getAllCircles(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getAvailableCircles(
-      country: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getCircleInfo(
       circleId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getPlatformStats(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getUserActiveCircles(
-      user: PromiseOrValue<string>,
+    getCirclesByCountry(
+      country: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getUserCircles(
-      user: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getUserReputation(
       user: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1321,8 +962,6 @@ export interface ROSCAFactory extends BaseContract {
 
     totalPlatformRevenue(overrides?: CallOverrides): Promise<BigNumber>;
 
-    totalValueLocked(overrides?: CallOverrides): Promise<BigNumber>;
-
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1334,20 +973,9 @@ export interface ROSCAFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    updateUserReputation(
-      user: PromiseOrValue<string>,
-      newScore: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     userCircles(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    userReputationScores(
-      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1389,45 +1017,17 @@ export interface ROSCAFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    distributeYield(
-      circleId: PromiseOrValue<BigNumberish>,
-      yieldAmount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    emergencyWithdraw(
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    getActiveCircles(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getAllCircles(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getAvailableCircles(
-      country: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     getCircleInfo(
       circleId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getPlatformStats(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getUserActiveCircles(
-      user: PromiseOrValue<string>,
+    getCirclesByCountry(
+      country: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getUserCircles(
-      user: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getUserReputation(
       user: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1486,8 +1086,6 @@ export interface ROSCAFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    totalValueLocked(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1499,20 +1097,9 @@ export interface ROSCAFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    updateUserReputation(
-      user: PromiseOrValue<string>,
-      newScore: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     userCircles(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    userReputationScores(
-      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

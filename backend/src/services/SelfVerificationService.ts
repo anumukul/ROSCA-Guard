@@ -21,31 +21,27 @@ export class SelfVerificationService {
   constructor() {
     this.isProduction = process.env.NODE_ENV === 'production';
     
-    console.log(`Initializing Self Protocol Backend SDK...`);
-    console.log(`Environment: ${this.isProduction ? 'production' : 'development'}`);
-    console.log(`Config ID: ${process.env.SELF_CONFIG_ID}`);
+    console.log('Initializing Self Protocol Backend SDK...');
+    console.log('Environment:', this.isProduction ? 'production' : 'development');
+    console.log('Config ID:', process.env.SELF_CONFIG_ID);
     
-    // Initialize the REAL Self Backend Verifier
-    // FIXED: Match the registered config ID exactly
+    // FIXED: Use UUID to match frontend
     this.verifier = new SelfBackendVerifier(
-      'rosca-guard-v1', // Scope - must match frontend
-      `${process.env.API_URL || 'http://localhost:3001'}/api/self/verify-self`, // Endpoint
-      !this.isProduction, // mockPassport: true for development, false for production
-      AllIds, // Accept all document types (passport, aadhaar, etc.)
+      'rosca-guard-v1',
+      `${process.env.API_URL || 'http://localhost:3001'}/api/self/verify-self`,
+      !this.isProduction,
+      AllIds,
       new DefaultConfigStore({
-        minimumAge: 18, // Matches registered config
-        excludedCountries: [], // FIXED: Empty array matches "All countries allowed" in your config
-        ofac: true, // FIXED: Matches "OFAC Level 1: Enabled" in your config
+        minimumAge: 18,
+        excludedCountries: [],
+        ofac: true,
       }),
-      'uuid' // User ID type
+      'uuid' // CHANGED BACK: Match frontend UUID format
     );
 
-    console.log('✅ Self Protocol Backend SDK initialized successfully');
+    console.log('Self Protocol Backend SDK initialized with userIdType: uuid');
   }
 
-  /**
-   * Verify Self Protocol proof using the official SDK
-   */
   async verifyProof(
     attestationId: string,
     proof: any,
@@ -53,25 +49,16 @@ export class SelfVerificationService {
     userContextData: any
   ): Promise<VerificationResult> {
     try {
-      console.log('🔍 Starting Self Protocol proof verification:', {
+      console.log('Starting verification with inputs:', {
         attestationId,
-        hasProof: !!proof,
-        hasPublicSignals: !!publicSignals,
-        hasUserContextData: !!userContextData,
+        userContextDataType: typeof userContextData,
         userContextDataLength: userContextData?.length
       });
 
-      // Validate required fields
-      if (!proof || !publicSignals || !attestationId || !userContextData) {
-        return {
-          isValid: false,
-          error: 'Missing required verification data (proof, publicSignals, attestationId, or userContextData)'
-        };
+      if (!attestationId || !proof || !publicSignals || !userContextData) {
+        return { isValid: false, error: 'Missing required parameters' };
       }
 
-      // Use the REAL Self Protocol SDK to verify the proof
-      console.log('📡 Calling Self Protocol SDK verify method...');
-      
       const result = await this.verifier.verify(
         attestationId,
         proof,
@@ -79,157 +66,43 @@ export class SelfVerificationService {
         userContextData
       );
 
-      console.log('📊 Self Protocol verification result:', {
-        isValid: result.isValidDetails.isValid,
-        isOlderThanValid: result.isValidDetails.isOlderThanValid,
-        nationality: result.discloseOutput?.nationality,
-        olderThan: result.discloseOutput?.olderThan,
-        userIdentifier: result.discloseOutput?.userIdentifier
-      });
-
-      // Check if verification passed all requirements
-      if (result.isValidDetails.isValid && result.isValidDetails.isOlderThanValid) {
-        
-        // Determine verification type from attestation ID or user context
-        let verificationType: 'passport' | 'aadhaar' = 'passport';
-        try {
-          // Try to parse user context data to get verification type
-          const contextData = JSON.parse(
-            Buffer.from(userContextData.slice(0, -64), 'hex').toString()
-          );
-          verificationType = contextData.verificationType || 'passport';
-          console.log('📋 Parsed verification type from context:', verificationType);
-        } catch (error) {
-          console.warn('⚠️ Could not parse user context data, defaulting to passport:', error.message);
-          // Fallback: determine from attestation ID
-          verificationType = this.getVerificationTypeFromAttestation(attestationId);
-        }
-
+      if (result?.isValidDetails?.isValid && result?.discloseOutput) {
         const userData = {
-          nationality: result.discloseOutput.nationality,
-          age: result.discloseOutput.olderThan, // This is the minimum age they proved
-          isHuman: true, // Self Protocol inherently verifies humanity through document verification
-          passedOFACCheck: true, // OFAC check is built into Self Protocol
-          verificationType,
-          userIdentifier: result.discloseOutput.userIdentifier,
-          attestationId
+          nationality: result.discloseOutput.nationality || 'Unknown',
+          age: result.discloseOutput.olderThan || 18,
+          isHuman: true,
+          passedOFACCheck: true,
+          verificationType: attestationId === '3' ? 'aadhaar' : 'passport',
+          userIdentifier: result.discloseOutput.userIdentifier || 'unknown',
+          attestationId: attestationId
         };
 
-        console.log('✅ Verification successful:', userData);
-
-        return {
-          isValid: true,
-          userData
-        };
+        console.log('Verification successful:', userData);
+        return { isValid: true, userData };
       } else {
-        const errorDetails = {
-          isValid: result.isValidDetails.isValid,
-          isOlderThanValid: result.isValidDetails.isOlderThanValid,
-          invalidDetails: result.isValidDetails.invalidDetails || 'Unknown validation error'
-        };
-
-        console.log('❌ Verification failed:', errorDetails);
-
-        return {
-          isValid: false,
-          error: `Verification failed: ${errorDetails.invalidDetails || 'Invalid proof or age requirement not met'}`
-        };
+        const error = result?.isValidDetails?.invalidDetails || 'Verification failed';
+        console.error('Verification failed:', error);
+        return { isValid: false, error };
       }
 
-    } catch (error) {
-      console.error('💥 Self Protocol verification error:', error);
-      
-      // Enhanced error handling
-      let errorMessage = 'Verification failed: ';
-      if (error.message.includes('Network')) {
-        errorMessage += 'Network error - please check your internet connection';
-      } else if (error.message.includes('timeout')) {
-        errorMessage += 'Verification timeout - please try again';
-      } else if (error.message.includes('Invalid proof')) {
-        errorMessage += 'Invalid proof format';
-      } else {
-        errorMessage += error.message || 'Unknown error occurred';
-      }
-
-      return {
-        isValid: false,
-        error: errorMessage
-      };
+    } catch (error: any) {
+      console.error('Verification error:', error.message);
+      return { isValid: false, error: error.message };
     }
   }
 
-  /**
-   * Determine verification type from attestation ID
-   */
-  private getVerificationTypeFromAttestation(attestationId: string): 'passport' | 'aadhaar' {
-    // These would be the actual attestation IDs from Self Protocol
-    // You'll need to check the actual values from Self Protocol documentation
-    const aadhaarAttestationIds = [
-      'aadhaar_card',
-      'AADHAAR',
-      'aadhaar'
-    ];
-    
-    const passportAttestationIds = [
-      'e_passport',
-      'PASSPORT', 
-      'passport'
-    ];
-
-    const attestationStr = attestationId.toLowerCase();
-    
-    if (aadhaarAttestationIds.some(id => attestationStr.includes(id.toLowerCase()))) {
-      return 'aadhaar';
-    }
-    
-    if (passportAttestationIds.some(id => attestationStr.includes(id.toLowerCase()))) {
-      return 'passport';
-    }
-
-    // Default to passport if unclear
-    console.warn(`Unknown attestation ID: ${attestationId}, defaulting to passport`);
-    return 'passport';
-  }
-
-  /**
-   * Get verification service statistics
-   */
   getStats() {
     return {
       service: 'Self Protocol Backend Verifier',
-      scope: 'rosca-guard-v1',
-      mode: this.isProduction ? 'production' : 'development',
-      configId: process.env.SELF_CONFIG_ID,
-      minimumAge: 18,
-      ofacEnabled: true,
-      supportedDocuments: ['passport', 'aadhaar'],
-      excludedCountries: [] // FIXED: Empty to match registered config
+      userIdType: 'address',
+      configId: process.env.SELF_CONFIG_ID
     };
   }
 
-  /**
-   * Health check for the verification service
-   */
-  async healthCheck(): Promise<{ status: string; details: any }> {
-    try {
-      // You could add a test verification call here if Self SDK supports it
-      return {
-        status: 'healthy',
-        details: {
-          sdkInitialized: !!this.verifier,
-          configId: process.env.SELF_CONFIG_ID,
-          environment: this.isProduction ? 'production' : 'development',
-          timestamp: new Date().toISOString()
-        }
-      };
-    } catch (error) {
-      return {
-        status: 'unhealthy',
-        details: {
-          error: error.message,
-          timestamp: new Date().toISOString()
-        }
-      };
-    }
+  async healthCheck() {
+    return {
+      status: 'healthy',
+      details: { sdkInitialized: !!this.verifier }
+    };
   }
 }

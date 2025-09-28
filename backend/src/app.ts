@@ -22,6 +22,9 @@ console.log('ETHEREUM_RPC_URL:', process.env.ETHEREUM_RPC_URL ? 'SET ✅' : 'MIS
 console.log('KYC_VERIFIER_ADDRESS:', process.env.KYC_VERIFIER_ADDRESS ? 'SET ✅' : 'MISSING ❌');
 console.log('ROSCA_FACTORY_ADDRESS:', process.env.ROSCA_FACTORY_ADDRESS ? 'SET ✅' : 'MISSING ❌');
 
+// FIXED: Trust proxy configuration for rate limiting
+app.set('trust proxy', 1); // Trust first proxy
+
 // Security middleware
 app.use(helmet());
 app.use(cors({
@@ -29,12 +32,13 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
+// Rate limiting - FIXED: Added after trust proxy
 const generalRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true, // ADDED: Explicitly trust proxy for rate limiting
 });
 
 app.use(generalRateLimit);
@@ -46,7 +50,8 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    selfConfigId: process.env.SELF_CONFIG_ID
+    selfConfigId: process.env.SELF_CONFIG_ID,
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
@@ -68,4 +73,5 @@ app.listen(PORT, () => {
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   console.log(`🔐 Self verification: http://localhost:${PORT}/api/self/verify-self`);
   console.log(`🆔 Self Config ID: ${process.env.SELF_CONFIG_ID}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

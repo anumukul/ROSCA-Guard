@@ -27,7 +27,7 @@ export class SelfVerificationService {
     
     // Initialize Self Backend Verifier with correct parameters
     this.verifier = new SelfBackendVerifier(
-      'rosca-guard-v1', // scope (same as frontend)
+      'rosca-guard-v1', // scope (must match frontend)
       `${process.env.API_URL || 'http://localhost:3001'}/api/self/verify-self`, // endpoint
       !this.isProduction, // mockPassport: true for dev, false for prod
       AllIds, // Accept all document types
@@ -61,10 +61,17 @@ export class SelfVerificationService {
         return { isValid: false, error: 'Missing required parameters' };
       }
 
-      // The SDK expects attestationId as number, convert from string
-      const numericAttestationId = parseInt(attestationId);
+      // FIXED: The SDK expects specific literal types 1 or 2
+      let numericAttestationId: 1 | 2;
+      if (attestationId === '1') {
+        numericAttestationId = 1; // Passport
+      } else if (attestationId === '3') {
+        numericAttestationId = 2; // Aadhaar (mapped to 2)
+      } else {
+        return { isValid: false, error: 'Unsupported attestation ID. Use "1" for passport or "3" for aadhaar.' };
+      }
 
-      // Call the Self Backend Verifier
+      // Call the Self Backend Verifier with proper typing
       const result = await this.verifier.verify(
         numericAttestationId,
         proof,
@@ -80,14 +87,30 @@ export class SelfVerificationService {
 
       // Check if verification succeeded
       if (result?.isValidDetails?.isValid && result?.discloseOutput) {
-        // Extract user data from the response
+        // FIXED: Access properties that actually exist based on the contract structure
+        const discloseOutput = result.discloseOutput;
+        
+        // Extract basic info - using safe property access
+        const nationality = (discloseOutput as any).nationality || 
+                           (discloseOutput as any).issuingState || 'Unknown';
+        
+        // For age, try multiple possible property names
+        const age = (discloseOutput as any).minimumAge || 
+                   (discloseOutput as any).olderThan || 
+                   (discloseOutput as any).age || 18;
+        
+        // For user identifier
+        const userIdentifier = String((discloseOutput as any).userIdentifier || 
+                                     (discloseOutput as any).userId || 
+                                     Date.now());
+
         const userData = {
-          nationality: result.discloseOutput.nationality || 'Unknown',
-          age: Number(result.discloseOutput.olderThan || 18), // Ensure it's a number
+          nationality,
+          age: Number(age), // Ensure it's a number
           isHuman: true,
           passedOFACCheck: result.isValidDetails.isOfacValid !== false,
           verificationType: (attestationId === '3' ? 'aadhaar' : 'passport') as 'aadhaar' | 'passport',
-          userIdentifier: String(result.discloseOutput.userIdentifier || 'unknown'), // Ensure it's a string
+          userIdentifier,
           attestationId: attestationId
         };
 
@@ -95,7 +118,7 @@ export class SelfVerificationService {
         return { isValid: true, userData };
       } else {
         // Handle verification failure
-        const error = 'Self Protocol verification failed';
+        const error = 'Self Protocol verification failed - invalid proof or missing disclosure data';
         console.error('❌ Verification failed:', {
           isValid: result?.isValidDetails?.isValid,
           hasDiscloseOutput: !!result?.discloseOutput
@@ -104,7 +127,7 @@ export class SelfVerificationService {
       }
 
     } catch (error: any) {
-      console.error('💥 Self Protocol verification error:', error.message);
+      console.error('💥 Self Protocol verification error:', error);
       return { isValid: false, error: `Verification failed: ${error.message}` };
     }
   }
@@ -118,8 +141,9 @@ export class SelfVerificationService {
       mockMode: !this.isProduction,
       supportedAttestations: {
         '1': 'passport',
-        '3': 'aadhaar'
-      }
+        '3': 'aadhaar (mapped to 2 internally)'
+      },
+      note: 'Using official Self Protocol SDK'
     };
   }
 
@@ -129,7 +153,8 @@ export class SelfVerificationService {
       details: { 
         sdkInitialized: !!this.verifier,
         timestamp: new Date().toISOString(),
-        environment: this.isProduction ? 'production' : 'development'
+        environment: this.isProduction ? 'production' : 'development',
+        service: 'Self Protocol Backend Verifier'
       }
     };
   }

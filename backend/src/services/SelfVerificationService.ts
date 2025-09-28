@@ -25,21 +25,21 @@ export class SelfVerificationService {
     console.log('Environment:', this.isProduction ? 'production' : 'development');
     console.log('Config ID:', process.env.SELF_CONFIG_ID);
     
-    // FIXED: Use proper attestation ID type (1 or 2, not string)
+    // Initialize Self Backend Verifier with correct parameters
     this.verifier = new SelfBackendVerifier(
-      'rosca-guard-v1',
-      `${process.env.API_URL || 'http://localhost:3001'}/api/self/verify-self`,
-      !this.isProduction,
-      AllIds,
+      'rosca-guard-v1', // scope (same as frontend)
+      `${process.env.API_URL || 'http://localhost:3001'}/api/self/verify-self`, // endpoint
+      !this.isProduction, // mockPassport: true for dev, false for prod
+      AllIds, // Accept all document types
       new DefaultConfigStore({
         minimumAge: 18,
         excludedCountries: [],
         ofac: true,
       }),
-      'uuid'
+      'uuid' // userIdentifierType
     );
 
-    console.log('Self Protocol Backend SDK initialized with userIdType: uuid');
+    console.log('Self Protocol Backend SDK initialized successfully');
   }
 
   async verifyProof(
@@ -49,58 +49,63 @@ export class SelfVerificationService {
     userContextData: any
   ): Promise<VerificationResult> {
     try {
-      console.log('Starting verification with inputs:', {
+      console.log('Starting Self Protocol verification...');
+      console.log('Verification inputs:', {
         attestationId,
-        userContextDataType: typeof userContextData,
-        userContextDataLength: userContextData?.length
+        hasProof: !!proof,
+        hasPublicSignals: !!publicSignals,
+        hasUserContextData: !!userContextData
       });
 
       if (!attestationId || !proof || !publicSignals || !userContextData) {
         return { isValid: false, error: 'Missing required parameters' };
       }
 
-      // FIXED: Convert string attestationId to number (1 or 2)
-      const numericAttestationId = attestationId === '3' ? 2 : 1; // Aadhaar = 2, Passport = 1
+      // The SDK expects attestationId as number, convert from string
+      const numericAttestationId = parseInt(attestationId);
 
+      // Call the Self Backend Verifier
       const result = await this.verifier.verify(
-        numericAttestationId as 1 | 2,
+        numericAttestationId,
         proof,
         publicSignals,
         userContextData
       );
 
-      console.log('🔍 Raw verification result:', result);
+      console.log('✅ Raw Self Protocol result:', {
+        hasIsValidDetails: !!result?.isValidDetails,
+        isValid: result?.isValidDetails?.isValid,
+        hasDiscloseOutput: !!result?.discloseOutput
+      });
 
-      // FIXED: Handle the actual Self Protocol response structure
+      // Check if verification succeeded
       if (result?.isValidDetails?.isValid && result?.discloseOutput) {
-        // Extract data from the actual response structure
-        const discloseOutput = result.discloseOutput;
-        
+        // Extract user data from the response
         const userData = {
-          nationality: discloseOutput.nationality || 'Unknown',
-          age: discloseOutput.minimumAge || 18, // Use minimumAge instead of age
+          nationality: result.discloseOutput.nationality || 'Unknown',
+          age: Number(result.discloseOutput.olderThan || 18), // Ensure it's a number
           isHuman: true,
-          passedOFACCheck: result.isValidDetails.isOfacValid || true,
+          passedOFACCheck: result.isValidDetails.isOfacValid !== false,
           verificationType: (attestationId === '3' ? 'aadhaar' : 'passport') as 'aadhaar' | 'passport',
-          userIdentifier: discloseOutput.userId?.toString() || 'unknown', // Try userId instead of userIdentifier
+          userIdentifier: String(result.discloseOutput.userIdentifier || 'unknown'), // Ensure it's a string
           attestationId: attestationId
         };
 
         console.log('✅ Verification successful:', userData);
         return { isValid: true, userData };
       } else {
-        // FIXED: Handle error from isValidDetails properly
-        const errorMsg = !result?.isValidDetails?.isValid 
-          ? 'Verification failed - invalid proof'
-          : 'Verification failed - no disclosure data';
-        
-        console.error('❌ Verification failed:', errorMsg);
-        return { isValid: false, error: errorMsg };
+        // Handle verification failure
+        const error = 'Self Protocol verification failed';
+        console.error('❌ Verification failed:', {
+          isValid: result?.isValidDetails?.isValid,
+          hasDiscloseOutput: !!result?.discloseOutput
+        });
+        return { isValid: false, error };
       }
 
     } catch (error: any) {
-      console.error('💥 Verification error:', error.message);
-      return { isValid: false, error: error.message };
+      console.error('💥 Self Protocol verification error:', error.message);
+      return { isValid: false, error: `Verification failed: ${error.message}` };
     }
   }
 
@@ -109,9 +114,11 @@ export class SelfVerificationService {
       service: 'Self Protocol Backend Verifier',
       userIdType: 'uuid',
       configId: process.env.SELF_CONFIG_ID,
+      environment: this.isProduction ? 'production' : 'development',
+      mockMode: !this.isProduction,
       supportedAttestations: {
         '1': 'passport',
-        '3': 'aadhaar (mapped to 2)'
+        '3': 'aadhaar'
       }
     };
   }
@@ -121,7 +128,8 @@ export class SelfVerificationService {
       status: 'healthy',
       details: { 
         sdkInitialized: !!this.verifier,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        environment: this.isProduction ? 'production' : 'development'
       }
     };
   }

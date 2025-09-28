@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { CrossChainBridge } from '../services/CrossChainBridge';
 
@@ -12,7 +12,7 @@ const bridge = new CrossChainBridge(
 );
 
 // Health check endpoint
-router.get('/health', async (req, res) => {
+router.get('/health', async (req: Request, res: Response) => {
   try {
     const health = await bridge.healthCheck();
     res.json({
@@ -29,7 +29,7 @@ router.get('/health', async (req, res) => {
 });
 
 // Get platform statistics
-router.get('/stats', async (req, res) => {
+router.get('/stats', async (req: Request, res: Response) => {
   try {
     const stats = await bridge.getPlatformStats();
     res.json({
@@ -55,7 +55,7 @@ router.post('/create-circle',
     body('minAge').isInt({ min: 18 }).withMessage('Minimum age must be at least 18'),
     body('maxAge').isInt({ max: 100 }).withMessage('Maximum age cannot exceed 100'),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -85,7 +85,7 @@ router.post('/create-circle',
 );
 
 // Get circle information
-router.get('/circle/:id', async (req, res) => {
+router.get('/circle/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     
@@ -111,7 +111,7 @@ router.post('/batch-eligibility',
     body('userAddresses').isArray().withMessage('User addresses must be an array'),
     body('circleId').isInt({ min: 0 }).withMessage('Valid circle ID is required'),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -142,7 +142,7 @@ router.post('/batch-eligibility',
 );
 
 // Get contract configuration
-router.get('/config', async (req, res) => {
+router.get('/config', async (req: Request, res: Response) => {
   try {
     const config = await bridge.getContractConfig();
     res.json({

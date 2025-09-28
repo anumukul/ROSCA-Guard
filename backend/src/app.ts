@@ -32,13 +32,12 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting - FIXED: Added after trust proxy
+// Rate limiting - FIXED: Removed trustProxy property
 const generalRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  trustProxy: true, // ADDED: Explicitly trust proxy for rate limiting
 });
 
 app.use(generalRateLimit);

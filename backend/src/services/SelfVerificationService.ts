@@ -66,21 +66,24 @@ export class SelfVerificationService {
         userContextData
       );
 
+      // FIXED: Handle the actual Self Protocol response structure
       if (result?.isValidDetails?.isValid && result?.discloseOutput) {
         const userData = {
           nationality: result.discloseOutput.nationality || 'Unknown',
-          age: result.discloseOutput.olderThan || 18,
+          age: result.discloseOutput.age || result.discloseOutput.minimumAge || 18,
           isHuman: true,
           passedOFACCheck: true,
-          verificationType: attestationId === '3' ? 'aadhaar' : 'passport',
-          userIdentifier: result.discloseOutput.userIdentifier || 'unknown',
+          verificationType: (attestationId === '3' ? 'aadhaar' : 'passport') as 'aadhaar' | 'passport',
+          userIdentifier: result.discloseOutput.userIdentifier?.toString() || 'unknown',
           attestationId: attestationId
         };
 
         console.log('Verification successful:', userData);
         return { isValid: true, userData };
       } else {
-        const error = result?.isValidDetails?.invalidDetails || 'Verification failed';
+        const error = result?.isValidDetails?.error || 
+                     result?.error || 
+                     'Verification failed';
         console.error('Verification failed:', error);
         return { isValid: false, error };
       }
@@ -94,7 +97,7 @@ export class SelfVerificationService {
   getStats() {
     return {
       service: 'Self Protocol Backend Verifier',
-      userIdType: 'address',
+      userIdType: 'uuid',
       configId: process.env.SELF_CONFIG_ID
     };
   }

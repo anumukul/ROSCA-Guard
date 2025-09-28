@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { SelfVerificationService } from '../services/SelfVerificationService';
 import { CrossChainBridge } from '../services/CrossChainBridge';
@@ -21,7 +21,7 @@ router.post('/verify-self',
     body('publicSignals').notEmpty().withMessage('Public signals are required'),
     body('userContextData').notEmpty().withMessage('User context data is required'),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -110,7 +110,7 @@ router.post('/verify-self',
 );
 
 // Get user's KYC status
-router.get('/kyc-status/:address', async (req, res) => {
+router.get('/kyc-status/:address', async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
 
@@ -150,7 +150,7 @@ router.post('/check-eligibility',
     body('userAddress').isEthereumAddress().withMessage('Valid user address is required'),
     body('circleId').isInt({ min: 0 }).withMessage('Valid circle ID is required'),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -189,7 +189,7 @@ router.post('/check-eligibility',
 );
 
 // Get verification service stats
-router.get('/stats', async (req, res) => {
+router.get('/stats', async (req: Request, res: Response) => {
   try {
     console.log('📊 Fetching verification stats...');
     
@@ -215,7 +215,7 @@ router.get('/stats', async (req, res) => {
 });
 
 // Health check endpoint for Self service
-router.get('/health', async (req, res) => {
+router.get('/health', async (req: Request, res: Response) => {
   try {
     const healthCheck = await selfVerificationService.healthCheck();
     
@@ -234,7 +234,7 @@ router.get('/health', async (req, res) => {
 });
 
 // Add this to backend/src/api/selfRoutes.ts
-router.get('/test-sdk', async (req, res) => {
+router.get('/test-sdk', async (req: Request, res: Response) => {
   try {
     const stats = selfVerificationService.getStats();
     const health = await selfVerificationService.healthCheck();

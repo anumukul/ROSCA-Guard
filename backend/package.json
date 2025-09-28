@@ -13,8 +13,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@selfxyz/core": "1.4.0",
-    "@selfxyz/contracts": "1.4.0",
+    "@selfxyz/core": "*",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
     "express-rate-limit": "^6.7.0",

@@ -17,13 +17,13 @@ export default defineConfig({
       protocolImports: true,
     }),
   ],
-  base: '/', // Important for Vercel
+  base: '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
     minify: 'esbuild',
-    target: 'es2015',
+    target: 'es2020', // This was already correct
     rollupOptions: {
       output: {
         manualChunks: undefined,
@@ -32,7 +32,7 @@ export default defineConfig({
   },
   define: {
     global: 'globalThis',
-    'process.env': process.env
+    'process.env': {} // Changed from process.env to {}
   },
   resolve: {
     alias: {
@@ -46,7 +46,13 @@ export default defineConfig({
       'buffer',
       'process',
       'util'
-    ]
+    ],
+    esbuildOptions: {
+      target: 'es2020', // Added this
+      define: {
+        global: 'globalThis'
+      }
+    }
   },
   server: {
     port: 3000,

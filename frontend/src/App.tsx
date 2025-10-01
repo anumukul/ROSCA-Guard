@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { WagmiConfig } from 'wagmi';
+import { WagmiProvider } from 'wagmi';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { wagmiConfig, chains } from './config/wallet';
+import { wagmiConfig } from './config/wallet';
 import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
-import VerifyIdentity from './pages/VerifyIdentity'; // NEW
+import VerifyIdentity from './pages/VerifyIdentity';
 import CreateCircle from './pages/CreateCircle';
 import BrowseCircles from './pages/BrowseCircles';
 import MyCircles from './pages/MyCircles';
@@ -17,15 +17,15 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <WagmiConfig config={wagmiConfig}>
-        <RainbowKitProvider chains={chains}>
+      <WagmiProvider config={wagmiConfig}>
+        <RainbowKitProvider>
           <Router>
             <div className="min-h-screen w-full bg-slate-900 overflow-x-hidden">
               <Navbar />
               <div className="w-full">
                 <Routes>
                   <Route path="/" element={<HomePage />} />
-                  <Route path="/verify" element={<VerifyIdentity />} /> {/* NEW */}
+                  <Route path="/verify" element={<VerifyIdentity />} />
                   <Route path="/create" element={<CreateCircle />} />
                   <Route path="/browse" element={<BrowseCircles />} />
                   <Route path="/my-circles" element={<MyCircles />} />
@@ -45,7 +45,7 @@ function App() {
             </div>
           </Router>
         </RainbowKitProvider>
-      </WagmiConfig>
+      </WagmiProvider>
     </QueryClientProvider>
   );
 }
